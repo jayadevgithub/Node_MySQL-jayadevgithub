@@ -13,7 +13,7 @@ describe("DbPersistence Test Suite", function(){
 	var billContact = new Contact("Bill", "Gates", "23002300");
 
 
-	beforeAll(function(done){
+	it("initial setup..",function(done){
 		var connection = contactsDb.GetConnection();
 
 		connection.query("delete from contacts", function(err, result){
@@ -101,5 +101,10 @@ describe("DbPersistence Test Suite", function(){
 			});
 
 		});
+	});
+
+	it("termiate..",function(done){
+		contactsDb.EndConnection();
+		done();
 	});
 });

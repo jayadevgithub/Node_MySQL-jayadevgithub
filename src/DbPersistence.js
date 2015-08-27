@@ -16,7 +16,19 @@ NOTES: 		1) Ensure you'e started mysql server and created the contacts table bef
 */
 
 exports.GetConnection = function(){
+	theConnection=mysql.createConnection({
+		host: "10.10.24.136",
+		user: "root",
+		password: "kony123!",
+		database: "nodejs"
+	});
 	return theConnection;
+}
+
+exports.EndConnection = function(){
+	theConnection.end(function(err){
+		console.log("connection terminated");
+	});
 }
 
 /*
@@ -34,8 +46,33 @@ NOTES: 		  Pay attention to the casing of contact object properties (firstName, 
 			  of the fields in the contacts table, ensure you are doing the needed mapping/conversions. 
 
 */
-exports.AddContact = function(contact, callback){
+var ContactMapper = function(firstName,lastName,phone){
+	this.firstName=firstName;
+	this.lastName=lastName;
+	this.phone=phone;
+}
 
+function MapContact(contact) {
+	var firstName;
+	var lastName;
+	var phone;
+	for (var property in contact) {
+		if (property.toLowerCase() == "firstName".toLowerCase()) {
+			firstName = contact[property];
+		} else if (property.toLowerCase() == "lastName".toLowerCase()) {
+			lastName = contact[property];
+		} else if (property.toLowerCase() == "phone") {
+			phone = contact[property];
+		}
+	}
+	var mappedContact = new ContactMapper(firstName, lastName, phone);
+	return mappedContact;
+}
+
+exports.AddContact = function(contact, callback){
+	theConnection.query("insert into contacts SET ?",[MapContact(contact)],function(err,result){
+		callback(err,result);
+	});
 }
 
 /*
@@ -53,7 +90,9 @@ ERROR CASES: error object should be passed to callback().
 */
 
 exports.ReadContact = function(id, callback){
-
+	theConnection.query("select id, firstName as firstName, lastName as lastName, phone from contacts WHERE id = ?",[id],function(err,result){
+		callback(err,result);
+	});
 }
 
 /*
@@ -69,7 +108,9 @@ ERROR CASES: error object should be passed to callback().
 */
 
 exports.ReadContacts = function(callback){
-
+	theConnection.query("select * from contacts",function(err,result){
+		callback(err,result);
+	});
 }
 
 /*
@@ -87,7 +128,15 @@ ERROR CASES: error object should be passed to callback().
 
 */
 exports.UpdateContact = function(id, newPhoneNumber, callback){
-
+	theConnection.query("UPDATE contacts SET phone = ? WHERE id = ?",[newPhoneNumber,id],function(err,result){
+		if(err){
+			callback(err,null);
+		}else{
+			exports.ReadContact(id,function(err,result){
+				callback(err,result[0]);
+			})
+		}
+	});
 }
 
 /*
@@ -103,6 +152,7 @@ ERROR CASES: error object should be passed to callback().
 
 */
 exports.DeleteContact = function(id, callback){
-
+	theConnection.query("DELETE FROM contacts WHERE id="+id,function(err,result){
+		callback(err,result);
+	});
 }
-
