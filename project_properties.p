@@ -22,7 +22,7 @@ Vhttp://mission-rnd.github.io/nodejs_mysql.htm
 p11
 sVproject_status
 p12
-I0
+I1
 sVproject_gitrepo
 p13
 Vhttps://github.com/mission-rnd/mrnd-nodejs-mysql
